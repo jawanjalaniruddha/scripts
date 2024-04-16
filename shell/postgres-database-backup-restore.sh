@@ -16,8 +16,7 @@ if [[ $# -eq 0 ]] ; then
 fi
 
 # Use env vars from .env or config file file 
-#CONFIG_FILE_PATH="/home/ubuntu/.env.json"
-CONFIG_FILE_PATH="/Users/ajawanjai/Professional/Batchsys/data-migration-service/.env.json"
+CONFIG_FILE_PATH="/home/ubuntu/.env.json"
 DEFAULT_POSTGRES_PORT=5432
 
 # Set variables
@@ -26,7 +25,7 @@ HOST=$(jq -r .production.host $CONFIG_FILE_PATH)
 USERNAME=$(jq -r .production.username $CONFIG_FILE_PATH)
 PASSWORD=$(jq -r .production.password $CONFIG_FILE_PATH)
 DATABASE=$(jq -r .production.database $CONFIG_FILE_PATH)
-DB_DUMP_FILE="batchsys_demo_$(date +"%d%b%Y").sql"
+DB_DUMP_FILE="automationproject_demo_$(date +"%d%b%Y").sql"
 
 EXCLUDE_TABLES=(addresses   customers   carts   orders   order_details   bundle_order_details   user_discounts   newsletters   visitor_logs   customer_bundles   integrations customer_admin_integrations   user_reviews)
 
@@ -34,7 +33,7 @@ printf "\n#-------------------------------------#"
 # Execute pg_dump command
 printf "\nTaking database backup of DB $DATABASE from $HOST\n"
 sleep 2
-export PGPASSWORD=$PASSWORD; pg_dump -h $HOST -p $PORT -U $USERNAME -Fc -b -v -f $DB_DUMP_FILE -d batchsys
+export PGPASSWORD=$PASSWORD; pg_dump -h $HOST -p $PORT -U $USERNAME -Fc -b -v -f $DB_DUMP_FILE -d automationproject
 INPUT_FILE=$DB_DUMP_FILE
 
 # Check if pg_dump was successful
@@ -56,7 +55,7 @@ then
     RESTORE_HOST=$(jq -r .development.host $CONFIG_FILE_PATH)
     RESTORE_USERNAME=$(jq -r .development.username $CONFIG_FILE_PATH)
     RESTORE_PASSWORD=$(jq -r .development.password $CONFIG_FILE_PATH)
-    RESTORE_DATABASE_NAME="batchsys_$1_`date +%d%m%Y`"
+    RESTORE_DATABASE_NAME="automationproject_$1_`date +%d%m%Y`"
     export PGPASSWORD=$RESTORE_PASSWORD;
 elif [ "$1" == "demo" ];
 then 
@@ -65,7 +64,7 @@ then
     RESTORE_HOST=$(jq -r .demo.host $CONFIG_FILE_PATH)
     RESTORE_USERNAME=$(jq -r .demo.username $CONFIG_FILE_PATH)
     RESTORE_PASSWORD=$(jq -r .demo.password $CONFIG_FILE_PATH)
-    RESTORE_DATABASE_NAME="batchsys_$1_`date +%d%m%Y`"
+    RESTORE_DATABASE_NAME="automationproject_$1_`date +%d%m%Y`"
     export PGPASSWORD=$RESTORE_PASSWORD;
 else
     sleep 0.1
@@ -77,7 +76,7 @@ fi
 
 
 # Execute the SQL command to create restoration DB in postgres 
-psql -h $RESTORE_HOST -p $RESTORE_PORT -U $RESTORE_USERNAME -d batchsys -c "CREATE DATABASE $RESTORE_DATABASE_NAME;"
+psql -h $RESTORE_HOST -p $RESTORE_PORT -U $RESTORE_USERNAME -d automationproject -c "CREATE DATABASE $RESTORE_DATABASE_NAME;"
 
 # Check if the command executed successfully
 if [ $? -eq 0 ]; then
@@ -85,8 +84,8 @@ if [ $? -eq 0 ]; then
 else
   printf "Error: Failed to create database $RESTORE_DATABASE_NAME."
   printf "Recreating database $RESTORE_DATABASE_NAME\n"
-  psql -h $RESTORE_HOST -p $RESTORE_PORT -U $RESTORE_USERNAME -d batchsys -c "DROP DATABASE $RESTORE_DATABASE_NAME;"
-  psql -h $RESTORE_HOST -p $RESTORE_PORT -U $RESTORE_USERNAME -d batchsys -c "CREATE DATABASE $RESTORE_DATABASE_NAME;"
+  psql -h $RESTORE_HOST -p $RESTORE_PORT -U $RESTORE_USERNAME -d automationproject -c "DROP DATABASE $RESTORE_DATABASE_NAME;"
+  psql -h $RESTORE_HOST -p $RESTORE_PORT -U $RESTORE_USERNAME -d automationproject -c "CREATE DATABASE $RESTORE_DATABASE_NAME;"
 fi
 
 # Execute psql command for database restoration
